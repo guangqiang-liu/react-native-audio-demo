@@ -93,14 +93,13 @@ export default class MusicPlayer extends Component {
 
   componentDidMount() {
     this.spin()
-    // 发起网络请求，获取音乐列表数据
     fetch(musicListUrl, {
       method: 'GET',
       headers: header
     })
       .then((response) => response.json())
       .then((responseData) => {
-        if (responseData.data[0].music_id) {
+        if (responseData.data[2].music_id) {
           this.musicList = responseData.data
           this.getxiamiMusic(responseData.data[0].music_id)
         }
@@ -138,7 +137,6 @@ export default class MusicPlayer extends Component {
     })
   }
 
-  // 下一首
   nextSong(currentIndex) {
     this.reset()
     currentIndex === this.state.musicList.length ? currentIndex = 0 : currentIndex
@@ -146,17 +144,13 @@ export default class MusicPlayer extends Component {
     let music_id = newSong.music_id
     if (!isNaN(parseInt(music_id))) {
       this.getxiamiMusic(music_id)
-      // 此处音乐播放器有bug
-      // this.rotation = !this.rotation
       this.setState({currentIndex})
     } else {
       this.nextSong(currentIndex + 1)
       this.showMessageBar('抱歉')('没有找到音乐信息，已帮你切换到下一首')('error')
     }
-    // this.play()
   }
 
-  // 上一首
   preSong(currentIndex) {
     this.reset()
     currentIndex === -1 ? currentIndex = this.state.musicList.length -1 : currentIndex
@@ -169,11 +163,9 @@ export default class MusicPlayer extends Component {
       this.preSong(currentIndex - 1)
       this.showMessageBar('抱歉')('没有找到音乐信息，已帮你切换到下一首')('error')
     }
-    // this.play()
   }
 
   reset() {
-    // 开始请求下一首歌曲，先将之前的歌曲信息删除
     this.setState({
       currentTime: 0.00,
       slideValue: 0.00,
@@ -209,11 +201,9 @@ export default class MusicPlayer extends Component {
 
   onEnd(data) {
     this.showMessageBar('亲！')('已帮你切换到下一首')('fuccess')
-    // 开始下一首
     if (this.state.playMode === 0) {
       this.nextSong(this.state.currentIndex + 1)
     } else if (this.state.playMode === 1) {
-      // 播放器从头开始播放
       this.player.seek(0)
     } else {
       this.nextSong(Math.floor(Math.random() * this.musicList.length))
