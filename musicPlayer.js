@@ -13,6 +13,7 @@ import Video from 'react-native-video'
 import {VibrancyView, BlurView} from 'react-native-blur'
 import {Icon} from './icon'
 
+const mockData = require('./musicList.json')
 const deviceInfo = {
   deviceWidth: Dimensions.get('window').width,
   deviceHeight: Platform.OS === 'ios' ? Dimensions.get('window').height : Dimensions.get('window').height - 24
@@ -22,6 +23,7 @@ const header = {
   'Accept': 'application/json',
   'Content-Type': 'application/json',
 }
+
 const musicListUrl = 'http://v3.wufazhuce.com:8000/api/music/bymonth/2017-10'
 const musicDetail = 'http://xiamirun.avosapps.com/run?song=http://www.xiami.com/song/'
 
@@ -93,37 +95,38 @@ export default class MusicPlayer extends Component {
 
   componentDidMount() {
     this.spin()
-    fetch(musicListUrl, {
-      method: 'GET',
-      headers: header
-    })
-      .then((response) => response.json())
-      .then((responseData) => {
-        if (responseData.data[2].music_id) {
-          this.musicList = responseData.data
-          this.getxiamiMusic(responseData.data[0].music_id)
-        }
-      })
-      .catch((error) => {
-        console.log(error)
-      })
-      .done()
+    this.setState({musicInfo: mockData.list[this.state.currentIndex]})
+    // fetch(musicListUrl, {
+    //   method: 'GET',
+    //   headers: header
+    // })
+    //   .then((response) => response.json())
+    //   .then((responseData) => {
+    //     if (responseData.data[2].music_id) {
+    //       this.musicList = responseData.data
+    //       this.getxiamiMusic(responseData.data[0].music_id)
+    //     }
+    //   })
+    //   .catch((error) => {
+    //     console.log(error)
+    //   })
+    //   .done()
   }
 
-  getxiamiMusic(musicId) {
-    fetch(`${musicDetail}${musicId}`, {
-      method: 'GET',
-      headers: header})
-      .then((response) => response.json())
-      .then((responseData) => {
-        console.log(responseData)
-        this.setState({musicList: this.musicList, musicInfo: responseData})
-      })
-      .catch((error) => {
-        console.log(error)
-      })
-      .done()
-  }
+  // getxiamiMusic(musicId) {
+  //   fetch(`${musicDetail}${musicId}`, {
+  //     method: 'GET',
+  //     headers: header})
+  //     .then((response) => response.json())
+  //     .then((responseData) => {
+  //       console.log(responseData)
+  //       this.setState({musicList: this.musicList, musicInfo: responseData})
+  //     })
+  //     .catch((error) => {
+  //       console.log(error)
+  //     })
+  //     .done()
+  // }
 
   setDuration(duration) {
     this.setState({duration: duration.duration})
@@ -139,30 +142,34 @@ export default class MusicPlayer extends Component {
 
   nextSong(currentIndex) {
     this.reset()
-    currentIndex === this.state.musicList.length ? currentIndex = 0 : currentIndex
-    let newSong = this.state.musicList[currentIndex]
-    let music_id = newSong.music_id
-    if (!isNaN(parseInt(music_id))) {
-      this.getxiamiMusic(music_id)
-      this.setState({currentIndex})
-    } else {
-      this.nextSong(currentIndex + 1)
-      this.showMessageBar('抱歉')('没有找到音乐信息，已帮你切换到下一首')('error')
-    }
+    this.setState({currentIndex: currentIndex >= mockData.list.length ? 0 : currentIndex})
+
+    // currentIndex === this.state.musicList.length ? currentIndex = 0 : currentIndex
+    // let newSong = this.state.musicList[currentIndex]
+    // let music_id = newSong.music_id
+    // if (!isNaN(parseInt(music_id))) {
+    //   this.getxiamiMusic(music_id)
+    //   this.setState({currentIndex})
+    // } else {
+    //   this.nextSong(currentIndex + 1)
+    //   this.showMessageBar('抱歉')('没有找到音乐信息，已帮你切换到下一首')('error')
+    // }
   }
 
   preSong(currentIndex) {
     this.reset()
-    currentIndex === -1 ? currentIndex = this.state.musicList.length -1 : currentIndex
-    let newSong = this.state.musicList[currentIndex]
-    let music_id = newSong.music_id
-    if (!isNaN(parseInt(music_id))) {
-      this.getxiamiMusic(music_id)
-      this.setState({currentIndex})
-    } else {
-      this.preSong(currentIndex - 1)
-      this.showMessageBar('抱歉')('没有找到音乐信息，已帮你切换到下一首')('error')
-    }
+    this.setState({currentIndex: currentIndex < 0 ? mockData.list.length - 1 : currentIndex})
+
+    // currentIndex === -1 ? currentIndex = this.state.musicList.length -1 : currentIndex
+    // let newSong = this.state.musicList[currentIndex]
+    // let music_id = newSong.music_id
+    // if (!isNaN(parseInt(music_id))) {
+    //   this.getxiamiMusic(music_id)
+    //   this.setState({currentIndex})
+    // } else {
+    //   this.preSong(currentIndex - 1)
+    //   this.showMessageBar('抱歉')('没有找到音乐信息，已帮你切换到下一首')('error')
+    // }
   }
 
   reset() {
@@ -219,7 +226,8 @@ export default class MusicPlayer extends Component {
   }
 
   renderPlayer() {
-    let musicInfo = this.state.musicInfo
+    // let musicInfo = this.state.musicInfo
+    let musicInfo = mockData.list[this.state.currentIndex]
     return (
       <View style={styles.bgContainer}>
         <View style={styles.navBarStyle}>
@@ -232,7 +240,7 @@ export default class MusicPlayer extends Component {
             </TouchableOpacity>
             <View style={{alignItems: 'center'}}>
               <Text style={styles.title}>{musicInfo.title}</Text>
-              <Text style={styles.subTitle}>{musicInfo.artist}</Text>
+              <Text style={styles.subTitle}>子标题</Text>
             </View>
             <TouchableOpacity
               style={{marginTop: 5}}
@@ -339,7 +347,8 @@ export default class MusicPlayer extends Component {
   }
 
   render() {
-    const data = this.state.musicInfo || {}
+    // const data = this.state.musicInfo || {}
+    const data = mockData.list[this.state.currentIndex]
     return (
       data.url ?
         <View style={styles.container}>
